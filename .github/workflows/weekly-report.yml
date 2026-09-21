@@ -1,4 +1,4 @@
-name: Weekly GitHub Report
+name: 📅 주간 깃허브 활동 보고서
 
 on:
   schedule:
@@ -15,14 +15,14 @@ concurrency:
 
 env:
   ORG: sideproject2
-  REPOSITORIES: backend,frontend
+  REPOSITORIES: backend,frontend,workflow,infrastructure
 
 jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: GitHub App 인증
+      - name: 🔐 깃허브 앱 인증 토큰 발급
         id: app
         uses: actions/create-github-app-token@v3
         with:
@@ -32,8 +32,10 @@ jobs:
           repositories: |
             backend
             frontend
+            workflow
+            infrastructure
 
-      - name: 주간 업무 리포트 생성 및 전송
+      - name: 📊 주간 업무 리포트 생성 및 전송
         uses: actions/github-script@v8
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEEKLY_REPORT_WEBHOOK }}
@@ -120,10 +122,10 @@ jobs:
                 title,
                 color: 0x5865f2,
                 fields: [
-                  { name: '라벨별 이슈', value: formatRanked(ranked(repositoryLabels)), inline: true },
-                  { name: '담당자별 작업량', value: formatRanked(ranked(repositoryAssignees)), inline: true },
-                  { name: '이번 주 생성 이슈', value: (formatIssues(repositoryCreated) + omitted(repositoryCreated)).slice(0, 1024), inline: false },
-                  { name: '이번 주 완료 이슈', value: (formatIssues(repositoryCompleted) + omitted(repositoryCompleted)).slice(0, 1024), inline: false },
+                  { name: '🏷️ 라벨별 이슈', value: formatRanked(ranked(repositoryLabels)), inline: true },
+                  { name: '👥 담당자별 작업량', value: formatRanked(ranked(repositoryAssignees)), inline: true },
+                  { name: '🆕 이번 주 생성 이슈', value: (formatIssues(repositoryCreated) + omitted(repositoryCreated)).slice(0, 1024), inline: false },
+                  { name: '✅ 이번 주 완료 이슈', value: (formatIssues(repositoryCompleted) + omitted(repositoryCompleted)).slice(0, 1024), inline: false },
                 ],
               };
             };
@@ -140,16 +142,18 @@ jobs:
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                username: 'GitHub Weekly Report',
+                username: '📊 주간 깃허브 리포트',
                 embeds: [
                   {
-                  title: '주간 업무 리포트',
+                    title: '📊 주간 업무 리포트',
                   description: summary,
                   color: 0x5865f2,
-                  footer: { text: 'GitHub Projects · backend / frontend' },
+                  footer: { text: '깃허브 프로젝트 · 백엔드 / 프론트엔드 / 워크플로우 / 인프라' },
                   },
                   repositoryEmbed('backend', '백엔드'),
                   repositoryEmbed('frontend', '프론트엔드'),
+                  repositoryEmbed('workflow', '워크플로우'),
+                  repositoryEmbed('infrastructure', '인프라'),
                 ],
               }),
             });
